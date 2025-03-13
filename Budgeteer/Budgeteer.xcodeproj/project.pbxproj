@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DDCFECE02D8212410048E3AF /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DDCFECDF2D8212410048E3AF /* FirebaseAuth */; };
+		DDCFECE22D8212410048E3AF /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DDCFECE12D8212410048E3AF /* FirebaseFirestore */; };
+		DDCFECE72D8231CD0048E3AF /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = DDCFECE62D8231CD0048E3AF /* FirebaseCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DDCFEC7D2D8063B10048E3AF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +35,30 @@
 		DDCFEC862D8063B10048E3AF /* BudgeteerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgeteerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DDCFECDC2D82118C0048E3AF /* Exceptions for "Budgeteer" folder in "BudgeteerTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+			);
+			target = DDCFEC7B2D8063B10048E3AF /* BudgeteerTests */;
+		};
+		DDCFECDD2D82118C0048E3AF /* Exceptions for "Budgeteer" folder in "BudgeteerUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+			);
+			target = DDCFEC852D8063B10048E3AF /* BudgeteerUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DDCFEC6E2D8063AF0048E3AF /* Budgeteer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DDCFECDC2D82118C0048E3AF /* Exceptions for "Budgeteer" folder in "BudgeteerTests" target */,
+				DDCFECDD2D82118C0048E3AF /* Exceptions for "Budgeteer" folder in "BudgeteerUITests" target */,
+			);
 			path = Budgeteer;
 			sourceTree = "<group>";
 		};
@@ -42,6 +69,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDCFECE02D8212410048E3AF /* FirebaseAuth in Frameworks */,
+				DDCFECE72D8231CD0048E3AF /* FirebaseCore in Frameworks */,
+				DDCFECE22D8212410048E3AF /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,6 +130,9 @@
 			);
 			name = Budgeteer;
 			packageProductDependencies = (
+				DDCFECDF2D8212410048E3AF /* FirebaseAuth */,
+				DDCFECE12D8212410048E3AF /* FirebaseFirestore */,
+				DDCFECE62D8231CD0048E3AF /* FirebaseCore */,
 			);
 			productName = Budgeteer;
 			productReference = DDCFEC6C2D8063AF0048E3AF /* Budgeteer.app */;
@@ -177,6 +210,9 @@
 			);
 			mainGroup = DDCFEC632D8063AF0048E3AF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DDCFECDE2D8212410048E3AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DDCFEC6D2D8063AF0048E3AF /* Products */;
 			projectDirPath = "";
@@ -540,6 +576,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DDCFECDE2D8212410048E3AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DDCFECDF2D8212410048E3AF /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDCFECDE2D8212410048E3AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		DDCFECE12D8212410048E3AF /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDCFECDE2D8212410048E3AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		DDCFECE62D8231CD0048E3AF /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DDCFECDE2D8212410048E3AF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DDCFEC642D8063AF0048E3AF /* Project object */;
 }

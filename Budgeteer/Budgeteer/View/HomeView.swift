@@ -22,6 +22,19 @@ struct HomeView: View {
                     }
                     .frame(maxWidth: .infinity)
                     
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: CreateTransactionView()) {
+                        Image(systemName: "plus")
+                                .font(.title)
+                                .padding()
+                                .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.trailing)
+                    
+                    //Button here
+                    
                     ListCard(category: "Pay check", value: 768.89, color: .gray)
                     ListCard(category: "Groceries", value: -126.78, color: .gray)
                     ListCard(category: "Snacks", value: -8.48, color: .gray)
