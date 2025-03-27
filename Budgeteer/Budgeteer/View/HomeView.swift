@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct HomeView: View {
+    @State private var transactions: [Transaction] = []
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -18,34 +21,71 @@ struct HomeView: View {
                         .padding(.leading)
                     
                     HStack {
-                        BudgetBarView(moneyCount: 969.80)
+                        BudgetBarView(moneyCount: calculateTotal())
                     }
                     .frame(maxWidth: .infinity)
                     
                     HStack {
                         Spacer()
-                        NavigationLink(destination: CreateTransactionView()) {
-                        Image(systemName: "plus")
+                        NavigationLink(destination: CreateTransactionView(onSave: { transaction in
+                            transactions.append(transaction)
+                        })) {
+                            Image(systemName: "plus")
                                 .font(.title)
                                 .padding()
                                 .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.trailing)
+                    
+                    VStack {
+                        if transactions.isEmpty {
+                            Text("No transactions yet.")
+                                .foregroundColor(.gray)
+                                .padding()
+                        } else {
+                            ForEach(groupedTransactions(), id: \.key) { category, totalValue in
+                                NavigationLink(destination: CategoryDetailView(category: category, transactions: transactions.filter { $0.category == category })) {
+                                    ListCard(category: category, value: totalValue, color: totalValue >= 0 ? .green : .red)
+                                }
                             }
                         }
-                        .padding(.trailing)
-                    
-                    //Button here
-                    
-                    ListCard(category: "Pay check", value: 768.89, color: .gray)
-                    ListCard(category: "Groceries", value: -126.78, color: .gray)
-                    ListCard(category: "Snacks", value: -8.48, color: .gray)
-                    ListCard(category: "OPUS", value: -60, color: .gray)
-                    ListCard(category: "Rent", value: -600, color: .gray)
-                    
-                    Spacer()
+                    }
                 }
                 .padding(.top)
             }
         }
+        .onAppear(perform: fetchTransactions)
+    }
+    
+    private func fetchTransactions() {
+        let db = Firestore.firestore()
+        db.collection("transactions").getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching transactions: \(error.localizedDescription)")
+                return
+            }
+            
+            transactions = snapshot?.documents.compactMap { doc in
+                let data = doc.data()
+                guard let name = data["name"] as? String,
+                      let category = data["category"] as? String,
+                      let value = data["value"] as? Double,
+                      let timestamp = data["date"] as? Timestamp else { return nil }
+                
+                return Transaction(name: name, category: category, value: value, date: timestamp.dateValue())
+            } ?? []
+        }
+    }
+    
+    private func groupedTransactions() -> [(key: String, value: Double)] {
+        let grouped = Dictionary(grouping: transactions, by: { $0.category })
+            .mapValues { $0.reduce(0) { $0 + $1.value } }
+        return grouped.sorted { $0.key < $1.key }
+    }
+    
+    private func calculateTotal() -> Double {
+        return transactions.reduce(0) { $0 + $1.value }
     }
 }
 
