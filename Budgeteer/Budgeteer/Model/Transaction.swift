@@ -9,6 +9,7 @@ import Foundation
 
 struct Transaction: Identifiable {
     let id: UUID = UUID()
+    let userId: String
     let name: String
     let category: String
     let value: Double

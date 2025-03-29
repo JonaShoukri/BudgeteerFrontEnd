@@ -15,69 +15,56 @@ struct SignUpView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var errorMessage = ""
-    @State private var isSignedUp = false
-    @State private var navigateToSignIn = false
-
+    @AppStorage("isUserLoggedIn") private var isUserLoggedIn: Bool = false
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
-        if isSignedUp {
-            ContentView()
-        } else if navigateToSignIn {
-            SignInView()
-        } else {
-            VStack(spacing: 20) {
-                Text("Sign Up")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.bottom, 10)
+        VStack(spacing: 20) {
+            Text("Sign Up")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding(.bottom, 10)
 
-                if !errorMessage.isEmpty {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .font(.callout)
-                        .padding(.horizontal)
-                }
-
-                TextField("Full Name", text: $fullName)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-
-                TextField("Email", text: $email)
-                    .keyboardType(.emailAddress)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-
-                SecureField("Password", text: $password)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-
-                SecureField("Confirm Password", text: $confirmPassword)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-
-                Button(action: signUp) {
-                    Text("Create Account")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-                .padding(.top, 10)
-
-                Button(action: { navigateToSignIn = true }) {
-                    Text("Sign In")
-                        .font(.callout)
-                        .foregroundColor(.blue)
-                        .padding(.top, 10)
-                }
+            if !errorMessage.isEmpty {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .font(.callout)
+                    .padding(.horizontal)
             }
-            .padding()
+
+            TextField("Full Name", text: $fullName)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+
+            TextField("Email", text: $email)
+                .keyboardType(.emailAddress)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+
+            SecureField("Password", text: $password)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+
+            SecureField("Confirm Password", text: $confirmPassword)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+
+            Button(action: signUp) {
+                Text("Create Account")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+            .padding(.top, 10)
         }
+        .padding()
     }
 
     func signUp() {
@@ -90,6 +77,11 @@ struct SignUpView: View {
 
         guard isValidEmail(email) else {
             errorMessage = "Invalid email format"
+            return
+        }
+
+        guard password.count >= 8 else {
+            errorMessage = "Password must be at least 8 characters"
             return
         }
 
@@ -112,7 +104,8 @@ struct SignUpView: View {
                     if let err = err {
                         errorMessage = err.localizedDescription
                     } else {
-                        isSignedUp = true
+                        isUserLoggedIn = true
+                        presentationMode.wrappedValue.dismiss()  // Go back to SignInView
                     }
                 }
             }
@@ -125,9 +118,10 @@ struct SignUpView: View {
     }
 }
 
-
 struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
-        SignUpView()
+        NavigationView {
+            SignUpView()
+        }
     }
 }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseFirestore
+import FirebaseAuth
 
 struct CreateTransactionView: View {
     
@@ -15,6 +16,8 @@ struct CreateTransactionView: View {
     @State private var value: String = ""
     @State private var date: Date = Date()
     @State private var isExpense: Bool = true  // Default: Expense
+    
+    @Environment(\.presentationMode) var presentationMode  // Add this
     
     var onSave: ((Transaction) -> Void)?
     
@@ -54,27 +57,33 @@ struct CreateTransactionView: View {
     }
     
     private func saveTransaction() {
+        guard let user = Auth.auth().currentUser else {
+            print("No user is signed in.")
+            return
+        }
+
         guard let transactionValue = Double(value), transactionValue >= 0 else {
             print("Invalid value: must be a non-negative number")
             return
         }
-        
+
         let adjustedValue = isExpense ? -transactionValue : transactionValue
-        
-        let transaction = Transaction(name: name, category: category, value: adjustedValue, date: date)
-        
+        let transaction = Transaction(userId: user.uid, name: name, category: category, value: adjustedValue, date: date)
+
         let db = Firestore.firestore()
         db.collection("transactions").addDocument(data: [
             "name": transaction.name,
             "category": transaction.category,
             "value": adjustedValue,
-            "date": transaction.date
+            "date": transaction.date,
+            "userId": user.uid // Store userId
         ]) { error in
             if let error = error {
                 print("Error adding transaction: \(error.localizedDescription)")
             } else {
                 print("Transaction successfully added!")
                 onSave?(transaction)
+                presentationMode.wrappedValue.dismiss() // Dismiss view after saving
             }
         }
     }

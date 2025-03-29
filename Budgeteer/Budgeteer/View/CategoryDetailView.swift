@@ -67,12 +67,12 @@ import Charts
 
 struct BarChartView: View {
     let transactions: [Transaction]
-    let timeFrame: TimeFrame  // TimeFrame is passed here
-    
+    let timeFrame: TimeFrame
+
     var body: some View {
-        let groupedData = groupTransactions(transactions, by: timeFrame)  // Use timeFrame
+        let groupedData = groupTransactions(transactions, by: timeFrame)
         
-        return Chart {
+        Chart {
             ForEach(groupedData, id: \.key) { date, total in
                 BarMark(
                     x: .value("Date", date),
@@ -81,63 +81,93 @@ struct BarChartView: View {
                 .foregroundStyle(total >= 0 ? Color.green : Color.red)
             }
         }
+        .chartXAxis {
+            AxisMarks(position: .bottom) { mark in
+                if let dateValue = mark.as(Date.self) {
+                    AxisValueLabel {
+                        Text(dateValue, format: dateFormat(for: timeFrame))
+                    }
+                }
+            }
+        }
     }
-    
+
+    private func dateFormat(for timeFrame: TimeFrame) -> Date.FormatStyle {
+        switch timeFrame {
+        case .day:
+            return Date.FormatStyle().hour(.defaultDigits(amPM: .abbreviated))
+        case .week, .month:
+            return Date.FormatStyle().month(.abbreviated).day(.defaultDigits)
+        case .sixMonths, .year:
+            return Date.FormatStyle().month(.abbreviated).year()
+        }
+    }
+
     private func groupTransactions(_ transactions: [Transaction], by timeFrame: TimeFrame) -> [(key: Date, value: Double)] {
         let calendar = Calendar.current
-        let currentDate = Date()
-        
-        // Filter transactions based on timeFrame and the last available date
-        let filteredTransactions: [Transaction]
-        
-        switch timeFrame {
-        case .day:
-            filteredTransactions = transactions.filter {
-                currentDate.timeIntervalSince($0.date) <= 86400 // Last 24 hours (in seconds)
+        let now = Date()
+
+        let startDate: Date = {
+            switch timeFrame {
+            case .day:
+                return calendar.date(byAdding: .day, value: -1, to: now)!
+            case .week:
+                return calendar.date(byAdding: .day, value: -7, to: now)!
+            case .month:
+                return calendar.date(byAdding: .month, value: -1, to: now)!
+            case .sixMonths:
+                return calendar.date(byAdding: .month, value: -6, to: now)!
+            case .year:
+                return calendar.date(byAdding: .year, value: -1, to: now)!
             }
-        case .week:
-            filteredTransactions = transactions.filter {
-                currentDate.timeIntervalSince($0.date) <= 604800 // Last 7 days (in seconds)
-            }
-        case .month:
-            filteredTransactions = transactions.filter {
-                currentDate.timeIntervalSince($0.date) <= 2592000 // Last 30 days (in seconds)
-            }
-        case .sixMonths:
-            filteredTransactions = transactions.filter {
-                currentDate.timeIntervalSince($0.date) <= 15768000 // Last 6 months (in seconds)
-            }
-        case .year:
-            filteredTransactions = transactions.filter {
-                currentDate.timeIntervalSince($0.date) <= 31536000 // Last 1 year (in seconds)
+        }()
+
+        let filteredTransactions = transactions.filter { $0.date >= startDate }
+
+        let dateGrouping: (Date) -> Date = { date in
+            switch timeFrame {
+            case .day:
+                return calendar.date(bySettingHour: calendar.component(.hour, from: date), minute: 0, second: 0, of: date)!
+            case .week, .month:
+                return calendar.startOfDay(for: date)
+            case .sixMonths:
+                return calendar.dateInterval(of: .weekOfYear, for: date)!.start
+            case .year:
+                return calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
             }
         }
-        
-        // Define the grouping logic based on timeFrame
-        let dateGrouping: (Date) -> Date
-        
-        switch timeFrame {
-        case .day:
-            // Group by the hour of the day
-            dateGrouping = { calendar.date(bySettingHour: calendar.component(.hour, from: $0), minute: 0, second: 0, of: $0)! }
-        case .week:
-            // Group by each day in the week
-            dateGrouping = { calendar.startOfDay(for: $0) }
-        case .month:
-            // Group by each day in the month
-            dateGrouping = { calendar.startOfDay(for: $0) }
-        case .sixMonths:
-            // Group by each week
-            dateGrouping = { calendar.dateInterval(of: .weekOfYear, for: $0)?.start ?? $0 }
-        case .year:
-            // Group by month
-            dateGrouping = { calendar.date(from: calendar.dateComponents([.year, .month], from: $0)) ?? $0 }
-        }
-        
-        // Group the transactions by the defined date interval
-        let grouped = Dictionary(grouping: filteredTransactions, by: { dateGrouping($0.date) })
+
+        var grouped = Dictionary(grouping: filteredTransactions, by: { dateGrouping($0.date) })
             .mapValues { $0.reduce(0) { $0 + $1.value } }
-        
+
+        // Fill missing dates with 0
+        let allDates = generateTimeIntervals(from: startDate, to: now, for: timeFrame)
+        for date in allDates where grouped[date] == nil {
+            grouped[date] = 0
+        }
+
         return grouped.sorted { $0.key < $1.key }
+    }
+
+    private func generateTimeIntervals(from start: Date, to end: Date, for timeFrame: TimeFrame) -> [Date] {
+        var dates: [Date] = []
+        let calendar = Calendar.current
+        var current = start
+
+        while current <= end {
+            dates.append(current)
+            switch timeFrame {
+            case .day:
+                current = calendar.date(byAdding: .hour, value: 1, to: current)!
+            case .week, .month:
+                current = calendar.date(byAdding: .day, value: 1, to: current)!
+            case .sixMonths:
+                current = calendar.date(byAdding: .weekOfYear, value: 1, to: current)!
+            case .year:
+                current = calendar.date(byAdding: .month, value: 1, to: current)!
+            }
+        }
+
+        return dates
     }
 }

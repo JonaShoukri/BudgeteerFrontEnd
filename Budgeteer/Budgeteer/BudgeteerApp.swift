@@ -20,30 +20,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct BudgeteerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @State private var isUserLoggedIn: Bool? = nil
+    @AppStorage("isUserLoggedIn") private var isUserLoggedIn: Bool = false
 
     var body: some Scene {
         WindowGroup {
-            if let isUserLoggedIn = isUserLoggedIn {
-                if isUserLoggedIn {
-                    ContentView()
-                } else {
-                    SignInView()
-                }
+            if isUserLoggedIn {
+                ContentView()
             } else {
-                // Show a loading view while checking authentication
-                ProgressView()
-                    .onAppear(perform: checkAuthState)
+                SignInView()
             }
         }
     }
-
-    // Check if user is already authenticated
-    func checkAuthState() {
-        if Auth.auth().currentUser != nil {
-            isUserLoggedIn = true
-        } else {
-            isUserLoggedIn = false
-        }
-    }
 }
+

@@ -43,18 +43,6 @@ struct SettingsView: View {
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
             }
             
-            // Buttons
-            Button(action: {
-                // Edit Profile Action
-            }) {
-                Text("Edit Profile")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            
             Button(action: logOut) {
                             Text("Log Out")
                                 .font(.headline)
@@ -72,36 +60,29 @@ struct SettingsView: View {
         }
     }
     
+    @AppStorage("isUserLoggedIn") private var isUserLoggedIn: Bool = false
     func logOut() {
-            do {
-                try Auth.auth().signOut()
-                // Close the current view and return to the SignIn screen
-                presentationMode.wrappedValue.dismiss()
-            } catch {
-                print("Error signing out: \(error.localizedDescription)")
-            }
-        }
-    
-    private func fetchUserData() {
-        guard let user = Auth.auth().currentUser else { return }
-        email = user.email ?? "Unknown"
-        
-        let db = Firestore.firestore()
-        db.collection("users").document(user.uid).getDocument { document, error in
-            if let document = document, document.exists, let data = document.data() {
-                fullName = data["fullName"] as? String ?? "No Name"
-            } else {
-                fullName = "No Name"
-            }
-            isLoading = false
-        }
-    }
-
-    private func logout() {
         do {
             try Auth.auth().signOut()
+            isUserLoggedIn = false  // Ensure the app navigates back to SignInView
         } catch {
             print("Error signing out: \(error.localizedDescription)")
+        }
+    }
+    
+    func fetchUserData() {
+        guard let user = Auth.auth().currentUser else { return }
+        let db = Firestore.firestore()
+        db.collection("users").document(user.uid).getDocument { document, error in
+            if let document = document, document.exists {
+                if let data = document.data() {
+                    fullName = data["fullName"] as? String ?? "Unknown"
+                    email = data["email"] as? String ?? "Unknown"
+                    isLoading = false
+                }
+            } else {
+                isLoading = false
+            }
         }
     }
 }
